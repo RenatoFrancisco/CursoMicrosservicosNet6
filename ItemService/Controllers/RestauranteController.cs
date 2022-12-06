@@ -25,4 +25,11 @@ public class RestauranteController : ControllerBase
 
         return Ok(_mapper.Map<IEnumerable<RestauranteReadDto>>(restaurantes));
     }
+
+    [HttpPost]
+    public ActionResult ReceberRestauranteDoRestauranteService(RestauranteReadDto restauranteReadDto)
+    {
+        Console.WriteLine(restauranteReadDto.Id);
+        return Ok();
+    }
 }
