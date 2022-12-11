@@ -1,3 +1,5 @@
+using System.Text;
+using System.Text.Json;
 using RabbitMQ.Client;
 using RestauranteService.Dtos;
 
@@ -15,7 +17,7 @@ public class RabbitMqClient : IRabbitMqClient
         _connection = new ConnectionFactory 
         {
             HostName = _configuration["RabbitMqHost"],
-            Port = 8200
+            Port = int.Parse(_configuration["RabbitMqPort"])
         }.CreateConnection();
 
         _channel = _connection.CreateModel();
@@ -24,6 +26,13 @@ public class RabbitMqClient : IRabbitMqClient
 
     public void PublicarRestaurante(RestauranteReadDto restauranteReadDto)
     {
-        throw new NotImplementedException();
+        var mensagem = JsonSerializer.Serialize(restauranteReadDto);
+        var body = Encoding.UTF8.GetBytes(mensagem);
+
+        _channel.BasicPublish(
+            exchange: "trigger",
+            routingKey: string.Empty,
+            basicProperties: default,
+            body: body);
     }
 }
