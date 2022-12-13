@@ -1,4 +1,7 @@
+using System.Text;
+using ItemService.EventProcessor;
 using RabbitMQ.Client;
+using RabbitMQ.Client.Events;
 
 namespace ItemService.RabbitMqClient;
 
@@ -8,6 +11,7 @@ public class RabbitMqSubscriber : BackgroundService
     private readonly string _nomeFila;
     private readonly IConnection _connection;
     private readonly IModel _channel;
+    private readonly IProcessaEvento _processaEvento;
 
     public RabbitMqSubscriber(IConfiguration configuration)
     {
@@ -26,6 +30,12 @@ public class RabbitMqSubscriber : BackgroundService
 
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        throw new NotImplementedException();
+        var consumer = new EventingBasicConsumer(_channel);
+        consumer.Received += (moduleHandle, e) => 
+        {
+            var body = e.Body;
+            var message = Encoding.UTF8.GetString(body.ToArray());
+            _processaEvento.Processar(message);
+        };
     }
 }
