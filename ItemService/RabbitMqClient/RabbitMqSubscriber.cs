@@ -13,7 +13,7 @@ public class RabbitMqSubscriber : BackgroundService
     private readonly IModel _channel;
     private readonly IProcessaEvento _processaEvento;
 
-    public RabbitMqSubscriber(IConfiguration configuration)
+    public RabbitMqSubscriber(IConfiguration configuration, IProcessaEvento processaEvento)
     {
         _configuration = configuration;
         _connection = new ConnectionFactory
@@ -26,6 +26,7 @@ public class RabbitMqSubscriber : BackgroundService
         _channel.ExchangeDeclare(exchange: "trigger", type: ExchangeType.Fanout);
         _nomeFila = _channel.QueueDeclare().QueueName;
         _channel.QueueBind(queue: _nomeFila, exchange: "trigger", routingKey: string.Empty);
+        _processaEvento = processaEvento;
     }
 
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
@@ -37,5 +38,9 @@ public class RabbitMqSubscriber : BackgroundService
             var message = Encoding.UTF8.GetString(body.ToArray());
             _processaEvento.Processar(message);
         };
+
+        _channel.BasicConsume(queue: _nomeFila, autoAck: true, consumer);
+
+        return Task.CompletedTask;
     }
 }
