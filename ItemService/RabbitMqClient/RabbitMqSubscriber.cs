@@ -16,12 +16,14 @@ public class RabbitMqSubscriber : BackgroundService
     public RabbitMqSubscriber(IConfiguration configuration, IProcessaEvento processaEvento)
     {
         _configuration = configuration;
+        
         _connection = new ConnectionFactory
         {
-            HostName = "localhost",
-            Port = 8002
+            HostName = _configuration["RabbitMQHost"],
+            Port = int.Parse(_configuration["RabbitMQPort"])
 
         }.CreateConnection();
+
         _channel = _connection.CreateModel();
         _channel.ExchangeDeclare(exchange: "trigger", type: ExchangeType.Fanout);
         _nomeFila = _channel.QueueDeclare().QueueName;
